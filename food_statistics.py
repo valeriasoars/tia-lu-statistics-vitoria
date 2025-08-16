@@ -18,7 +18,34 @@ class Statistics:
             O conjunto de dados, onde as chaves representam os nomes das
             colunas e os valores são as listas de dados correspondentes.
         """
+        if not isinstance(dataset, dict):
+            raise TypeError("O dataset deve ser um dicionário.")
+        
+        for value in dataset.values():
+            if not isinstance(value, list):
+               raise TypeError("Todos os valores no dicionário do dataset devem ser listas.") 
+        
+        if dataset:
+            sizes = [len(value) for value in dataset.values()]
+            if not all(size == sizes[0] for size in sizes):
+                raise ValueError("Todas as colunas no dataset devem ter o mesmo tamanho.")
+            
         self.dataset = dataset
+
+    def _validate_column(self, column):
+        if column not in self.dataset: 
+            raise KeyError(f"A coluna '{column}' não existe no dataset")
+    
+    def _validade_numeric_column(self, column):
+        self._validate_column(column)
+        data = self.dataset[column]
+
+        if data == []:
+            return
+        
+        for value in data: 
+            if not isinstance(value, (int, float)):
+                raise TypeError(f"A coluna '{column}' deve ter apenas valores numéricos")
 
     def mean(self, column):
         """
@@ -37,7 +64,14 @@ class Statistics:
         float
             A média dos valores na coluna.
         """
-        pass
+        self._validade_numeric_column(column)
+        data = self.dataset[column]
+
+        if data == []:
+            return 0.0
+        
+        mean = sum(data) / len(data)
+        return mean
 
     def median(self, column):
         """
@@ -111,7 +145,17 @@ class Statistics:
         float
             A variância dos valores na coluna.
         """
-        pass
+        self._validade_numeric_column(column)
+        data = self.dataset[column]
+
+        if data == []:
+            return 0.0
+        
+        mean_value = self.mean(column)
+        #mean_value = sum(data)/len(data)
+        squared_diffs = [(x - mean_value) ** 2 for x in data]
+        variance = sum(squared_diffs) / len(data)
+        return variance
 
     def covariance(self, column_a, column_b):
         """
@@ -148,7 +192,10 @@ class Statistics:
         set
             Um conjunto com os valores únicos da coluna.
         """
-        pass
+        self._validate_column(column)
+        data = self.dataset[column]
+        itemset = set(data)
+        return itemset
 
     def absolute_frequency(self, column):
         """
@@ -229,4 +276,40 @@ class Statistics:
         float
             A probabilidade condicional, um valor entre 0 e 1.
         """
-        pass
+        self._validade_numeric_column(column)
+        data = self.dataset[column]
+
+        if len(data) < 2:
+            return 0.0
+        
+        count_value2 = data.count(value2)
+
+        sequence_count = 0
+        for i in range(len(data) - 1):
+            if data[i] == value2 and data[i + 1] == value1:
+                sequence_count += 1
+
+        conditional_probability = sequence_count / count_value2
+        return conditional_probability
+    
+
+
+# exemplos
+dados = {
+   "idade": [20, 25, 30, 30, 30, 35, 35, 40, 50],
+   "altura": [1.70, 1.65, 1.20, 1.80,  1.80, 1.80, 2.0, 1.60, 1.70],
+   "sequencia": [1, 2, 1, 3, 1, 2, 2, 3, 1]
+}
+
+stats = Statistics(dados)
+
+
+print(stats.mean("idade"))
+print(stats.mean("altura"))
+
+
+print(stats.variance("idade"))
+
+print(stats.itemset("idade"))
+
+print(stats.conditional_probability("sequencia", 2, 1))
