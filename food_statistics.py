@@ -107,7 +107,28 @@ class Statistics:
         list
             Uma lista contendo o(s) valor(es) da moda.
         """
-        pass
+        self._validate_column(column)
+        data = self.dataset[column]
+
+        if data == []:
+            return []
+        
+        frequencia = {}
+
+        mode = []
+
+        for value in data:
+            if value not in frequencia: 
+                frequencia[value] = 0
+
+            frequencia[value] += 1
+        
+        frequenciaMax = max(frequencia.values())
+        
+        for i, j in frequencia.items():
+            if j == frequenciaMax: 
+                mode.append(i)
+        return mode
 
     def stdev(self, column):
         """
@@ -176,7 +197,36 @@ class Statistics:
         float
             O valor da covariância entre as duas colunas.
         """
-        pass
+        desvio_a = []
+        desvio_b = []
+        ListaDesvios = []
+
+        self._validade_numeric_column(column_a)
+        data_a = self.dataset[column_a]
+
+        self._validade_numeric_column(column_b)
+        data_b = self.dataset[column_b]
+
+        if data_a == [] or data_b == []:
+            return 0.0
+        
+        mean_value_a = self.mean(column_a)
+        mean_value_b = self.mean(column_b)
+        #mean_value = sum(data)/len(data)
+        for value in data_a:
+            desvio_a.append(value - mean_value_a)
+        for value in data_b:
+            desvio_b.append(value - mean_value_b)
+        
+        
+        for i in range(len(data_a)):
+            desvioCorrespondente = desvio_a[i] * desvio_b[i]
+            ListaDesvios.append(desvioCorrespondente)
+        
+        covariance = sum(ListaDesvios) / len(data_a)
+        
+        return covariance
+
 
     def itemset(self, column):
         """
@@ -229,7 +279,28 @@ class Statistics:
             Um dicionário onde as chaves são os itens e os valores são
             suas proporções (frequência relativa).
         """
-        pass
+        self._validate_column(column)
+        data = self.dataset[column]
+
+        if data == []:
+            return {}
+            
+        frequencia_absoluta = {}
+        frequencia_relativa = {}
+
+        for value in data:
+            if value not in frequencia_absoluta: 
+                frequencia_absoluta[value] = 0
+
+            frequencia_absoluta[value] += 1
+            
+        totalFrequencias = sum(frequencia_absoluta.values())
+
+        for value in frequencia_absoluta:
+            frequencia_relativa[value] = frequencia_absoluta[value] / totalFrequencias
+
+        return frequencia_relativa 
+
 
     def cumulative_frequency(self, column, frequency_method='absolute'):
         """
@@ -251,7 +322,35 @@ class Statistics:
             Um dicionário ordenado com os itens como chaves e suas
             frequências acumuladas como valores.
         """
-        pass
+        frequencia_absoluta = {}
+        frequencia_acumulada_absoluta = {}
+        frequencia_acumulada_relativa = {}
+
+        self._validate_column(column)
+        data = self.dataset[column]
+
+        data.sort()
+
+        for value in data:
+            if value not in frequencia_absoluta: 
+                frequencia_absoluta[value] = 0
+
+            frequencia_absoluta[value] += 1
+
+        acumulador = 0
+
+        for value in frequencia_absoluta:
+            acumulador += frequencia_absoluta[value]
+            frequencia_acumulada_absoluta[value] = acumulador 
+            frequencia_acumulada_relativa[value] = acumulador / len(data)
+        
+        if frequency_method == "absolute":
+            return frequencia_acumulada_absoluta
+        elif frequency_method == "relative":
+            return frequencia_acumulada_relativa
+        else:
+            raise ValueError("O 'frequency_method' deve ser 'absolute' ou 'relative'.")
+
 
     def conditional_probability(self, column, value1, value2):
         """
