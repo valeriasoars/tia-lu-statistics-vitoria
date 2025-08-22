@@ -383,6 +383,9 @@ class Statistics:
         
         count_value2 = data.count(value2)
 
+        if count_value2 == 0:
+            return 0.0 
+        
         sequence_count = 0
         for i in range(len(data) - 1):
             if data[i] == value2 and data[i + 1] == value1:
